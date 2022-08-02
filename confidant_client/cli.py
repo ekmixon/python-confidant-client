@@ -17,10 +17,7 @@ KEY_BAD_PATTERN = re.compile(r'(\W|^\d)')
 
 
 def _get_client_from_args(args):
-    if args.mfa:
-        mfa_pin = getpass.getpass('Enter the MFA code: ')
-    else:
-        mfa_pin = None
+    mfa_pin = getpass.getpass('Enter the MFA code: ') if args.mfa else None
     auth_context = {}
     if args._from:
         auth_context['from'] = args._from
@@ -30,11 +27,8 @@ def _get_client_from_args(args):
         auth_context['user_type'] = args.user_type
     if not auth_context:
         auth_context = None
-    if args.config_files:
-        config_files = args.config_files.split(',')
-    else:
-        config_files = None
-    client = confidant_client.ConfidantClient(
+    config_files = args.config_files.split(',') if args.config_files else None
+    return confidant_client.ConfidantClient(
         args.url,
         args.auth_key,
         auth_context,
@@ -47,9 +41,8 @@ def _get_client_from_args(args):
         config_files=config_files,
         profile=args.profile,
         verify=args.verify,
-        timeout=args.timeout
+        timeout=args.timeout,
     )
-    return client
 
 
 def _parse_args():

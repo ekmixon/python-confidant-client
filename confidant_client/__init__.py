@@ -112,7 +112,7 @@ class ConfidantClient(object):
         if profile is None:
             profile = 'default'
         # Override defaults from config file
-        self.config.update(self._load_config(config_files, profile))
+        self.config |= self._load_config(config_files, profile)
         # Override config from passed-in args
         args_config = {
             'url': url,
@@ -189,7 +189,6 @@ class ConfidantClient(object):
                     return config.get(profile, {})
             except IOError:
                 logging.debug('{0} config file not found.'.format(filename))
-                pass
             except yaml.YAMLError as e:
                 msg = 'Failed to parse {0}: {1}'.format(filename, e)
                 logging.error(msg)
@@ -199,15 +198,16 @@ class ConfidantClient(object):
 
     def _load_user_auth_context(self):
         """Conditionally load from auth context for users."""
-        if self.config['auth_context'].get('user_type') == 'user':
-            if not self.config['auth_context'].get('from'):
-                try:
-                    username = self.iam_client.get_user()['User']['UserName']
-                    self.config['auth_context']['from'] = username
-                except Exception:
-                    logging.warning(
-                        'Could not set from auth_context from get_user.'
-                    )
+        if self.config['auth_context'].get(
+            'user_type'
+        ) == 'user' and not self.config['auth_context'].get('from'):
+            try:
+                username = self.iam_client.get_user()['User']['UserName']
+                self.config['auth_context']['from'] = username
+            except Exception:
+                logging.warning(
+                    'Could not set from auth_context from get_user.'
+                )
 
     def _validate_client(self):
         """Ensure the configuration passed into init is valid."""
@@ -459,9 +459,7 @@ class ConfidantClient(object):
         # Return a dict, always with an attribute that specifies whether or not
         # the function was able to successfully get a result.
         ret = {'result': False}
-        logging.info(
-            'Attempting to revert credential to revision {}'.format(revision)
-        )
+        logging.info(f'Attempting to revert credential to revision {revision}')
         try:
             response = self._execute_request(
                 'put',
@@ -726,11 +724,8 @@ class ConfidantClient(object):
         ret = {'result': False}
         _san = ''
         if san:
-            if san > 1:
-                _san = '&'.join(['san={}'.format(i) for i in san])
-            else:
-                _san = 'san={}'.format(san[0])
-            _san = '&{}'.format(_san)
+            _san = '&'.join([f'san={i}' for i in san]) if san > 1 else f'san={san[0]}'
+            _san = f'&{_san}'
         try:
             response = self._execute_request(
                 'get',
@@ -860,7 +855,7 @@ class ConfidantClient(object):
                     **kwargs
                 )
             else:
-                raise ValueError('Unexpected method: {}'.format(method))
+                raise ValueError(f'Unexpected method: {method}')
         except requests.ConnectionError:
             raise RequestExecutionError('Failed to connect to confidant.')
         except requests.Timeout:

@@ -77,7 +77,6 @@ def combined_credential_pair_format(data):
     namespace = 'credentials'
     metadata_namespace = 'credentials_metadata'
     source_namespace = 'credentials_source'
-    ret = {}
     credential_pairs = {}
     credentials_metadata = []
     credentials_source = {}
@@ -92,7 +91,7 @@ def combined_credential_pair_format(data):
                     msg.format(credential['name'], credential['id'])
                 )
             credentials_source[key] = credential['id']
-        credential_pairs.update(credential['credential_pairs'])
+        credential_pairs |= credential['credential_pairs']
         credential_metadata = {
             'id': credential['id'],
             'revision': credential['revision'],
@@ -119,11 +118,14 @@ def combined_credential_pair_format(data):
         if credential.get('metadata'):
             credential_metadata['metadata'] = credential['metadata']
         credentials_metadata.append(credential_metadata)
-    ret[namespace] = credential_pairs
-    ret[metadata_namespace] = {
-        'revision': service.get('revision'),
-        'credentials': credentials_metadata
+    ret = {
+        namespace: credential_pairs,
+        metadata_namespace: {
+            'revision': service.get('revision'),
+            'credentials': credentials_metadata,
+        },
     }
+
     ret[source_namespace] = credentials_source
     return ret
 

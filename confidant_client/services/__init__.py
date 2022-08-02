@@ -16,9 +16,8 @@ def get_boto_client(
         ):
     """Get a boto3 client connection."""
     cache_key = '{0}:{1}:{2}'.format(client, region, aws_access_key_id)
-    if not aws_session_token:
-        if cache_key in CLIENT_CACHE:
-            return CLIENT_CACHE[cache_key]
+    if not aws_session_token and cache_key in CLIENT_CACHE:
+        return CLIENT_CACHE[cache_key]
     session = get_boto_session(
         region,
         aws_access_key_id,

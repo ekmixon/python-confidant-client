@@ -44,8 +44,8 @@ class FormatterTest(unittest.TestCase):
         for credentials in data['service']['credentials']:
             for key, value in six.iteritems(credentials['credential_pairs']):
                 expected_var_name = prefix.upper() + key.upper()
-                expected_assignment = '{}={}'.format(expected_var_name, value)
-                expected_export = 'export {}'.format(expected_var_name)
+                expected_assignment = f'{expected_var_name}={value}'
+                expected_export = f'export {expected_var_name}'
 
                 self.assertIn(expected_assignment, exports)
                 self.assertIn(expected_export, exports)
@@ -60,9 +60,9 @@ class FormatterTest(unittest.TestCase):
 
         exports = formatter.bash_export_format(data, default_prefix)
 
-        expected_var_name = override_prefix.upper() + 'TESTKEY'
-        expected_assignment = '{}={}'.format(expected_var_name, 'testval')
-        expected_export = 'export {}'.format(expected_var_name)
+        expected_var_name = f'{override_prefix.upper()}TESTKEY'
+        expected_assignment = f'{expected_var_name}=testval'
+        expected_export = f'export {expected_var_name}'
 
         self.assertIn(expected_assignment, exports)
         self.assertIn(expected_export, exports)
